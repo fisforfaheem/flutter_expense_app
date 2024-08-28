@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_expense_app/faq_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 part 'main.g.dart';
@@ -44,46 +48,84 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 }
 
-class SettingsPage extends StatelessWidget {
-  const SettingsPage({super.key});
+class MorePage extends StatelessWidget {
+  const MorePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
-      body: ListView(
-        padding: const EdgeInsets.all(16.0),
-        children: [
-          ListTile(
-            leading: const Icon(Icons.info, color: Colors.blue),
-            title: const Text(
-              'About',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            subtitle: const Text('Learn more about this app'),
-            trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const AboutPage()),
-            ),
+      appBar: AppBar(title: const Text('More')),
+      body: ListView(padding: const EdgeInsets.all(16.0), children: [
+        ListTile(
+          leading: const Icon(Icons.info, color: Colors.blue),
+          title: const Text(
+            'About ',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.privacy_tip, color: Colors.green),
-            title: const Text(
-              'Privacy Policy',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            subtitle: const Text('Read our privacy policy'),
-            trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => PrivacyPolicyPage()),
-            ),
+          subtitle: const Text('Learn more about this app'),
+          trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AboutPage()),
           ),
-          const Divider(),
-        ],
-      ),
+        ),
+        const Divider(),
+        ListTile(
+          leading: const Icon(Icons.privacy_tip, color: Colors.green),
+          title: const Text(
+            'Privacy Policy',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          subtitle: const Text('Read our privacy policy'),
+          trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => PrivacyPolicyPage()),
+          ),
+        ),
+        const Divider(),
+        //Share
+        ListTile(
+          leading: const Icon(Icons.share, color: Colors.orange),
+          title: const Text(
+            'Share',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          subtitle: const Text('Share this app'),
+          trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
+          onTap: () {
+            Share.share('Check out this awesome expense tracking app!');
+          },
+        ),
+        const Divider(),
+        //Rate US
+        ListTile(
+          leading: const Icon(Icons.feedback, color: Colors.red),
+          title: const Text(
+            'Feedback',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          subtitle: const Text('Share this app '),
+          trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
+          onTap: () => launchUrlString('https://www.google.com'),
+        ),
+        const Divider(),
+        ListTile(
+          leading: const Icon(Icons.question_answer, color: Colors.green),
+          subtitle: const Text('Frequently asked questions'),
+          title: const Text(
+            'FAQs',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const FaqPage()),
+            );
+          },
+        )
+      ]),
     );
   }
 }
@@ -287,7 +329,7 @@ class _HomePageState extends State<HomePage>
     HistoryPage(),
     AnalyticsPage(),
     //add a settings page
-    const SettingsPage(),
+    const MorePage(),
   ];
 
   late TabController _tabController;
@@ -324,8 +366,7 @@ class _HomePageState extends State<HomePage>
             BottomNavigationBarItem(
                 icon: Icon(Icons.analytics), label: 'Analytics'),
             //add a settings barItem
-            BottomNavigationBarItem(
-                icon: Icon(Icons.settings), label: 'Settings'),
+            BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'More'),
           ],
           type: BottomNavigationBarType.fixed,
           backgroundColor: Colors.blue.withOpacity(0.1),

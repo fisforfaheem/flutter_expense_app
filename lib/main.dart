@@ -3,11 +3,150 @@ import 'package:flutter_expense_app/faq_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
+// import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 part 'main.g.dart';
+
+class OnboardingScreen extends StatefulWidget {
+  const OnboardingScreen({super.key});
+
+  @override
+  _OnboardingScreenState createState() => _OnboardingScreenState();
+}
+
+class _OnboardingScreenState extends State<OnboardingScreen> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+
+  List<OnboardingPage> pages = [
+    OnboardingPage(
+      title: "Track Your Expenses",
+      description: "Easily record and categorize your daily expenses.",
+      icon: Icons.attach_money,
+    ),
+    OnboardingPage(
+      title: "Visualize Your Spending",
+      description: "See your spending patterns with interactive charts.",
+      icon: Icons.pie_chart,
+    ),
+    OnboardingPage(
+      title: "Set Budgets",
+      description: "Create budgets and stay on top of your financial goals.",
+      icon: Icons.savings,
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: [
+          PageView.builder(
+            controller: _pageController,
+            itemCount: pages.length,
+            onPageChanged: (int page) {
+              setState(() {
+                _currentPage = page;
+              });
+            },
+            itemBuilder: (context, index) {
+              return buildPage(pages[index]);
+            },
+          ),
+          Positioned(
+            bottom: 20,
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                pages.length,
+                (index) => buildDot(index),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 60,
+            right: 20,
+            child: _currentPage == pages.length - 1
+                ? ElevatedButton(
+                    onPressed: () => finishOnboarding(),
+                    child: const Text("Get Started"),
+                  )
+                : TextButton(
+                    onPressed: () => _pageController.nextPage(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                    ),
+                    child: const Text("Next"),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildPage(OnboardingPage page) {
+    return Padding(
+      padding: const EdgeInsets.all(40),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(page.icon, size: 100)
+              .animate()
+              .fade(duration: 500.ms)
+              .scale(delay: 200.ms),
+          const SizedBox(height: 40),
+          Text(
+            page.title,
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ).animate().fadeIn(delay: 300.ms).moveY(begin: 20, end: 0),
+          const SizedBox(height: 20),
+          Text(
+            page.description,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 16),
+          ).animate().fadeIn(delay: 500.ms).moveY(begin: 20, end: 0),
+        ],
+      ),
+    );
+  }
+
+  Widget buildDot(int index) {
+    return Container(
+      height: 10,
+      width: 10,
+      margin: const EdgeInsets.only(right: 5),
+      decoration: BoxDecoration(
+        color: _currentPage == index ? Colors.blue : Colors.grey,
+        borderRadius: BorderRadius.circular(5),
+      ),
+    );
+  }
+
+  void finishOnboarding() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('onboarding_complete', true);
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => const HomePage()));
+  }
+}
+
+class OnboardingPage {
+  final String title;
+  final String description;
+  final IconData icon;
+
+  OnboardingPage({
+    required this.title,
+    required this.description,
+    required this.icon,
+  });
+}
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -94,7 +233,9 @@ class MorePage extends StatelessWidget {
           subtitle: const Text('Share this app'),
           trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
           onTap: () {
-            Share.share('Check out this awesome expense tracking app!');
+            //use this and also add playstore link
+            Share.share(
+                'Download Expense Distribution app from Playstore: https://play.google.com/store/apps/details?id=com.example.flutter_expense_app');
           },
         ),
         const Divider(),
@@ -105,9 +246,10 @@ class MorePage extends StatelessWidget {
             'Feedback',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          subtitle: const Text('Share this app '),
+          subtitle: const Text('Rate us on Playstore'),
           trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
-          onTap: () => launchUrlString('https://www.google.com'),
+          onTap: () => launchUrlString(
+              'https://play.google.com/store/apps/details?id=com.example.flutter_expense_app'),
         ),
         const Divider(),
         ListTile(
@@ -287,11 +429,16 @@ void main() async {
   Hive.registerAdapter(ExpenseAdapter());
   await Hive.openBox<Person>('people');
   await Hive.openBox<Expense>('expenses');
-  runApp(const MyApp());
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  bool showOnboarding = prefs.getBool('onboarding_complete') ?? false;
+
+  runApp(MyApp(showOnboarding: !showOnboarding));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool showOnboarding;
+
+  const MyApp({super.key, required this.showOnboarding});
 
   @override
   Widget build(BuildContext context) {
@@ -307,7 +454,10 @@ class MyApp extends StatelessWidget {
           elevation: 0,
         ),
       ),
-      home: const SplashScreen(),
+      //  routes: {
+      //   '/home': (context) => HomePage(),
+      // },
+      home: showOnboarding ? const OnboardingScreen() : const HomePage(),
     );
   }
 }

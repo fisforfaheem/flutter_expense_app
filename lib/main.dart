@@ -45,6 +45,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Scaffold(
       body: Stack(
         children: [
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.blue, Colors.purple],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+          ),
           PageView.builder(
             controller: _pageController,
             itemCount: pages.length,
@@ -74,15 +83,28 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             right: 20,
             child: _currentPage == pages.length - 1
                 ? ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 30, vertical: 15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
                     onPressed: () => finishOnboarding(),
-                    child: const Text("Get Started"),
+                    child: const Text(
+                      "Get Started",
+                      style: TextStyle(fontSize: 18),
+                    ),
                   )
                 : TextButton(
                     onPressed: () => _pageController.nextPage(
                       duration: const Duration(milliseconds: 300),
                       curve: Curves.easeInOut,
                     ),
-                    child: const Text("Next"),
+                    child: const Text(
+                      "Next",
+                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    ),
                   ),
           ),
         ],
@@ -96,20 +118,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(page.icon, size: 100)
+          Icon(page.icon, size: 100, color: Colors.white)
               .animate()
               .fade(duration: 500.ms)
               .scale(delay: 200.ms),
           const SizedBox(height: 40),
           Text(
             page.title,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+                fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
           ).animate().fadeIn(delay: 300.ms).moveY(begin: 20, end: 0),
           const SizedBox(height: 20),
           Text(
             page.description,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 16),
+            style: const TextStyle(fontSize: 18, color: Colors.white70),
           ).animate().fadeIn(delay: 500.ms).moveY(begin: 20, end: 0),
         ],
       ),
@@ -117,13 +140,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget buildDot(int index) {
-    return Container(
-      height: 10,
-      width: 10,
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      height: 12,
+      width: _currentPage == index ? 12 : 10,
       margin: const EdgeInsets.only(right: 5),
       decoration: BoxDecoration(
-        color: _currentPage == index ? Colors.blue : Colors.grey,
-        borderRadius: BorderRadius.circular(5),
+        color: _currentPage == index ? Colors.white : Colors.white54,
+        borderRadius: BorderRadius.circular(6),
       ),
     );
   }
@@ -243,7 +267,7 @@ class MorePage extends StatelessWidget {
         ListTile(
           leading: const Icon(Icons.feedback, color: Colors.red),
           title: const Text(
-            'Feedback',
+            'Rate Us',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           subtitle: const Text('Rate us on Playstore'),

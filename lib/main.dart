@@ -179,32 +179,73 @@ class SplashScreen extends StatefulWidget {
   _SplashScreenState createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
   @override
   void initState() {
     super.initState();
-    _navigateToHome();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    );
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
+    _controller.forward();
+    Future.delayed(const Duration(seconds: 3), () {
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const HomePage(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+        ),
+      );
+    });
   }
 
-  _navigateToHome() async {
-    await Future.delayed(const Duration(seconds: 3), () {});
-    Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) => const HomePage()));
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            //add icon here
-            Icon(Icons.wallet, size: 100),
-            SizedBox(height: 20),
-            Text('Expense Distribution',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-          ],
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Colors.deepOrange.shade800, Colors.blue.shade600],
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ScaleTransition(
+                scale: _animation,
+                child: Image.asset('assets/images/playstore.png',
+                    width: 100, height: 100),
+              ),
+              const SizedBox(height: 20),
+              FadeTransition(
+                opacity: _animation,
+                child: const Text(
+                  'Knowledge Zone',
+                  style: TextStyle(
+                    fontSize: 24,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -259,11 +300,22 @@ class MorePage extends StatelessWidget {
           onTap: () {
             //use this and also add playstore link
             Share.share(
-                'Download Expense Distribution app from Playstore: https://play.google.com/store/apps/details?id=com.example.flutter_expense_app');
+                'Download Expense Distribution app from Playstore: https://play.google.com/store/apps/details?id=com.quickviewexpence.com');
           },
         ),
         const Divider(),
         //Rate US
+        // ListTile(
+        //   leading: const Icon(Icons.feedback, color: Colors.red),
+        //   title: const Text(
+        //     'Rate Us',
+        //     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        //   ),
+        //   subtitle: const Text('Rate us on Playstore'),
+        //   trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
+        //   onTap: () => launchUrlString(
+        //       'https://play.google.com/store/apps/details?id=com.example.flutter_expense_app'),
+        // ),
         ListTile(
           leading: const Icon(Icons.feedback, color: Colors.red),
           title: const Text(
@@ -273,7 +325,7 @@ class MorePage extends StatelessWidget {
           subtitle: const Text('Rate us on Playstore'),
           trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
           onTap: () => launchUrlString(
-              'https://play.google.com/store/apps/details?id=com.example.flutter_expense_app'),
+              'https://play.google.com/store/apps/details?id=com.quickviewexpence.com'),
         ),
         const Divider(),
         ListTile(
@@ -411,7 +463,7 @@ class AboutPage extends StatelessWidget {
 
 class PrivacyPolicyPage extends StatelessWidget {
   PrivacyPolicyPage({super.key});
-  String url = 'https://www.google.com';
+  String url = 'https://sites.google.com/view/quickviewexpense/home';
   @override
   Widget build(BuildContext context) {
     return Scaffold(

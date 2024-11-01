@@ -1,176 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_expense_app/faq_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
-import 'package:share_plus/share_plus.dart';
-// import 'package:url_launcher/url_launcher.dart';
-import 'package:url_launcher/url_launcher_string.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 part 'main.g.dart';
-
-class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({super.key});
-
-  @override
-  _OnboardingScreenState createState() => _OnboardingScreenState();
-}
-
-class _OnboardingScreenState extends State<OnboardingScreen> {
-  final PageController _pageController = PageController();
-  int _currentPage = 0;
-
-  List<OnboardingPage> pages = [
-    OnboardingPage(
-      title: "Track Your Expenses",
-      description: "Easily record and categorize your daily expenses.",
-      icon: Icons.attach_money,
-    ),
-    OnboardingPage(
-      title: "Visualize Your Spending",
-      description: "See your spending patterns with interactive charts.",
-      icon: Icons.pie_chart,
-    ),
-    OnboardingPage(
-      title: "Set Budgets",
-      description: "Create budgets and stay on top of your financial goals.",
-      icon: Icons.savings,
-    ),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.blue, Colors.purple],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-          ),
-          PageView.builder(
-            controller: _pageController,
-            itemCount: pages.length,
-            onPageChanged: (int page) {
-              setState(() {
-                _currentPage = page;
-              });
-            },
-            itemBuilder: (context, index) {
-              return buildPage(pages[index]);
-            },
-          ),
-          Positioned(
-            bottom: 20,
-            left: 0,
-            right: 0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                pages.length,
-                (index) => buildDot(index),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 60,
-            right: 20,
-            child: _currentPage == pages.length - 1
-                ? ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 30, vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                    ),
-                    onPressed: () => finishOnboarding(),
-                    child: const Text(
-                      "Get Started",
-                      style: TextStyle(fontSize: 18),
-                    ),
-                  )
-                : TextButton(
-                    onPressed: () => _pageController.nextPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                    ),
-                    child: const Text(
-                      "Next",
-                      style: TextStyle(fontSize: 18, color: Colors.white),
-                    ),
-                  ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget buildPage(OnboardingPage page) {
-    return Padding(
-      padding: const EdgeInsets.all(40),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(page.icon, size: 100, color: Colors.white)
-              .animate()
-              .fade(duration: 500.ms)
-              .scale(delay: 200.ms),
-          const SizedBox(height: 40),
-          Text(
-            page.title,
-            style: const TextStyle(
-                fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
-          ).animate().fadeIn(delay: 300.ms).moveY(begin: 20, end: 0),
-          const SizedBox(height: 20),
-          Text(
-            page.description,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 18, color: Colors.white70),
-          ).animate().fadeIn(delay: 500.ms).moveY(begin: 20, end: 0),
-        ],
-      ),
-    );
-  }
-
-  Widget buildDot(int index) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      height: 12,
-      width: _currentPage == index ? 12 : 10,
-      margin: const EdgeInsets.only(right: 5),
-      decoration: BoxDecoration(
-        color: _currentPage == index ? Colors.white : Colors.white54,
-        borderRadius: BorderRadius.circular(6),
-      ),
-    );
-  }
-
-  void finishOnboarding() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('onboarding_complete', true);
-    Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) => const HomePage()));
-  }
-}
-
-class OnboardingPage {
-  final String title;
-  final String description;
-  final IconData icon;
-
-  OnboardingPage({
-    required this.title,
-    required this.description,
-    required this.icon,
-  });
-}
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -252,230 +85,6 @@ class _SplashScreenState extends State<SplashScreen>
   }
 }
 
-class MorePage extends StatelessWidget {
-  const MorePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('More')),
-      body: ListView(padding: const EdgeInsets.all(16.0), children: [
-        ListTile(
-          leading: const Icon(Icons.info, color: Colors.blue),
-          title: const Text(
-            'About ',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          subtitle: const Text('Learn more about this app'),
-          trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AboutPage()),
-          ),
-        ),
-        const Divider(),
-        ListTile(
-          leading: const Icon(Icons.privacy_tip, color: Colors.green),
-          title: const Text(
-            'Privacy Policy',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          subtitle: const Text('Read our privacy policy'),
-          trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => PrivacyPolicyPage()),
-          ),
-        ),
-        const Divider(),
-        //Share
-        ListTile(
-          leading: const Icon(Icons.share, color: Colors.orange),
-          title: const Text(
-            'Share',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          subtitle: const Text('Share this app'),
-          trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
-          onTap: () {
-            //use this and also add playstore link
-            Share.share(
-                'Download Expense Distribution app from Playstore: https://play.google.com/store/apps/details?id=com.quickviewexpence.com');
-          },
-        ),
-        const Divider(),
-        //Rate US
-        // ListTile(
-        //   leading: const Icon(Icons.feedback, color: Colors.red),
-        //   title: const Text(
-        //     'Rate Us',
-        //     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        //   ),
-        //   subtitle: const Text('Rate us on Playstore'),
-        //   trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
-        //   onTap: () => launchUrlString(
-        //       'https://play.google.com/store/apps/details?id=com.example.flutter_expense_app'),
-        // ),
-        ListTile(
-          leading: const Icon(Icons.feedback, color: Colors.red),
-          title: const Text(
-            'Rate Us',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          subtitle: const Text('Rate us on Playstore'),
-          trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
-          onTap: () => launchUrlString(
-              'https://play.google.com/store/apps/details?id=com.quickviewexpence.com'),
-        ),
-        const Divider(),
-        ListTile(
-          leading: const Icon(Icons.question_answer, color: Colors.green),
-          subtitle: const Text('Frequently asked questions'),
-          title: const Text(
-            'FAQs',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const FaqPage()),
-            );
-          },
-        )
-      ]),
-    );
-  }
-}
-
-class AboutPage extends StatelessWidget {
-  const AboutPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('About')),
-      body: const SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Expense Distribution',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 16),
-              Row(
-                children: [
-                  Icon(Icons.group, size: 40, color: Colors.blue),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Manage and split expenses among friends and groups with ease.',
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 16),
-              Row(
-                children: [
-                  Icon(Icons.attach_money, size: 40, color: Colors.green),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Keep track of who owes what and settle up easily.',
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 16),
-              Row(
-                children: [
-                  Icon(Icons.pie_chart, size: 40, color: Colors.orange),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Visualize your expenses with detailed charts and graphs.',
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 16),
-              Divider(),
-              SizedBox(height: 16),
-              Text(
-                'Features',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 16),
-              ListTile(
-                leading: Icon(Icons.check_circle, color: Colors.blue),
-                title: Text('Easy expense tracking'),
-              ),
-              ListTile(
-                leading: Icon(Icons.check_circle, color: Colors.blue),
-                title: Text('Group expense management'),
-              ),
-              ListTile(
-                leading: Icon(Icons.check_circle, color: Colors.blue),
-                title: Text('Detailed reports and analytics'),
-              ),
-              ListTile(
-                leading: Icon(Icons.check_circle, color: Colors.blue),
-                title: Text('Secure and private'),
-              ),
-              ListTile(
-                leading: Icon(Icons.check_circle, color: Colors.blue),
-                title: Text('User-friendly interface'),
-              ),
-              SizedBox(height: 16),
-              Divider(),
-              SizedBox(height: 16),
-              Text(
-                'About Us',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 16),
-              Text(
-                'We are a team of passionate developers dedicated to making expense management easy and efficient. Our goal is to help you keep track of your expenses and manage your finances better.',
-                style: TextStyle(fontSize: 16),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class PrivacyPolicyPage extends StatelessWidget {
-  PrivacyPolicyPage({super.key});
-  String url = 'https://sites.google.com/view/quickviewexpense/home';
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Privacy Policy')),
-      body: WebViewWidget(
-          controller: WebViewController()
-            ..loadRequest(Uri.parse(url))
-            ..setJavaScriptMode(JavaScriptMode.unrestricted)),
-    );
-  }
-}
-
 @HiveType(typeId: 0)
 class Person extends HiveObject {
   @HiveField(0)
@@ -506,15 +115,12 @@ void main() async {
   await Hive.openBox<Person>('people');
   await Hive.openBox<Expense>('expenses');
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  bool showOnboarding = prefs.getBool('onboarding_complete') ?? false;
 
-  runApp(MyApp(showOnboarding: !showOnboarding));
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final bool showOnboarding;
-
-  const MyApp({super.key, required this.showOnboarding});
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -524,16 +130,20 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: Colors.grey[900],
-        appBarTheme: AppBarTheme(
-          backgroundColor: Colors.grey[850],
+        scaffoldBackgroundColor: const Color(0xFF1A1A2E),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF16213E),
           elevation: 0,
         ),
+        cardColor: const Color(0xFF16213E),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.white70,
+          showSelectedLabels: true,
+          showUnselectedLabels: true,
+        ),
       ),
-      //  routes: {
-      //   '/home': (context) => HomePage(),
-      // },
-      home: showOnboarding ? const OnboardingScreen() : const HomePage(),
+      home: const HomePage(),
     );
   }
 }
@@ -555,7 +165,6 @@ class _HomePageState extends State<HomePage>
     HistoryPage(),
     AnalyticsPage(),
     //add a settings page
-    const MorePage(),
   ];
 
   late TabController _tabController;
@@ -577,27 +186,59 @@ class _HomePageState extends State<HomePage>
     return SafeArea(
       child: Scaffold(
         body: _pages[_currentIndex],
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-          },
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.add), label: 'New'),
-            BottomNavigationBarItem(icon: Icon(Icons.people), label: 'People'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.history), label: 'History'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.analytics), label: 'Analytics'),
-            //add a settings barItem
-            BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'More'),
-          ],
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.blue.withOpacity(0.1),
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.white.withOpacity(0.5),
+        bottomNavigationBar: Container(
+          margin: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF16213E),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.blue.withOpacity(0.1),
+                blurRadius: 10,
+                spreadRadius: 1,
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: BottomNavigationBar(
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+              currentIndex: _currentIndex,
+              type: BottomNavigationBarType.fixed,
+              selectedItemColor: Colors.white,
+              unselectedItemColor: Colors.white60,
+              selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+              onTap: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.add_circle_outline),
+                  activeIcon: Icon(Icons.add_circle),
+                  label: '💰 New',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.people_outline),
+                  activeIcon: Icon(Icons.people),
+                  label: '👥 People',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.history_outlined),
+                  activeIcon: Icon(Icons.history),
+                  label: '📅 History',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.analytics_outlined),
+                  activeIcon: Icon(Icons.analytics),
+                  label: '📊 Analytics',
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -651,17 +292,22 @@ class _NewExpensePageState extends State<NewExpensePage>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'New Expense',
-              style: Theme.of(context).textTheme.headlineMedium,
+              '💸 New Expense',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 20),
             Container(
-              width: double.infinity,
-              height: 60,
-              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white.withOpacity(0.1)),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: TextField(
                 decoration: const InputDecoration(
-                  labelText: 'Total Amount',
+                  labelText: '💵 Total Amount',
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.all(16),
                 ),
@@ -676,8 +322,10 @@ class _NewExpensePageState extends State<NewExpensePage>
             ),
             const SizedBox(height: 20),
             Text(
-              'Select Involved People:',
-              style: Theme.of(context).textTheme.titleLarge,
+              '👥 Select Involved People:',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             Expanded(
               child: ValueListenableBuilder(
@@ -754,32 +402,52 @@ class _NewExpensePageState extends State<NewExpensePage>
       context: context,
       builder: (context) {
         double extraAmount = 0;
-        return AlertDialog(
-          title: Text('Adjust amount for $person'),
-          content: TextField(
-            decoration: const InputDecoration(labelText: 'Extra amount'),
-            keyboardType: TextInputType.number,
-            onChanged: (value) {
-              extraAmount = double.tryParse(value) ?? 0;
-            },
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  individualAmounts[person] =
-                      (individualAmounts[person] ?? 0) + extraAmount;
-                  totalAmount += extraAmount;
-                });
-                Navigator.of(context).pop();
-              },
-              child: const Text('Apply'),
-            ),
-          ],
+        String? errorText;
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: const Color(0xFF16213E),
+              title: Text('Adjust amount for $person'),
+              content: TextField(
+                decoration: InputDecoration(
+                  labelText: 'Extra amount',
+                  errorText: errorText,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.05),
+                ),
+                keyboardType: TextInputType.number,
+                onChanged: (value) {
+                  extraAmount = double.tryParse(value) ?? 0;
+                  setState(() {
+                    errorText =
+                        extraAmount < 0 ? 'Amount cannot be negative' : null;
+                  });
+                },
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: errorText == null
+                      ? () {
+                          setState(() {
+                            individualAmounts[person] =
+                                (individualAmounts[person] ?? 0) + extraAmount;
+                            totalAmount += extraAmount;
+                          });
+                          Navigator.of(context).pop();
+                        }
+                      : null,
+                  child: const Text('Apply'),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -824,8 +492,10 @@ class PeopleManagementPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Manage People',
-            style: Theme.of(context).textTheme.headlineMedium,
+            '👥 Manage People',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
           ),
           const SizedBox(height: 20),
           Expanded(
@@ -839,19 +509,30 @@ class PeopleManagementPage extends StatelessWidget {
                     return Dismissible(
                       key: Key(person.name),
                       background: Container(
-                        color: Colors.red,
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                         alignment: Alignment.centerRight,
                         padding: const EdgeInsets.only(right: 20),
-                        child: const Icon(Icons.delete, color: Colors.white),
+                        child: const Icon(Icons.delete, color: Colors.red),
                       ),
                       direction: DismissDirection.endToStart,
                       onDismissed: (_) => _deletePerson(context, person),
                       child: Container(
-                        width: double.infinity,
-                        height: 70,
-                        alignment: Alignment.center,
+                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(16),
+                          border:
+                              Border.all(color: Colors.white.withOpacity(0.1)),
+                        ),
                         child: ListTile(
+                          leading:
+                              const Icon(Icons.person, color: Colors.white70),
                           title: Text(person.name),
+                          trailing: const Icon(Icons.swipe_left,
+                              color: Colors.white54),
                         ),
                       ),
                     );
@@ -860,9 +541,20 @@ class PeopleManagementPage extends StatelessWidget {
               },
             ),
           ),
-          ElevatedButton(
-            onPressed: () => _addPerson(context),
-            child: const Text('Add Person'),
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(top: 16),
+            child: ElevatedButton.icon(
+              onPressed: () => _addPerson(context),
+              icon: const Icon(Icons.person_add),
+              label: const Text('Add Person'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.all(16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -874,29 +566,55 @@ class PeopleManagementPage extends StatelessWidget {
       context: context,
       builder: (context) {
         String newPerson = '';
-        return AlertDialog(
-          title: const Text('Add Person'),
-          content: TextField(
-            onChanged: (value) {
-              newPerson = value;
-            },
-            decoration: const InputDecoration(labelText: 'Name'),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                if (newPerson.isNotEmpty) {
-                  _peopleBox.add(Person(newPerson));
-                  Navigator.of(context).pop();
-                }
-              },
-              child: const Text('Add'),
-            ),
-          ],
+        bool isLoading = false;
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: const Color(0xFF16213E),
+              title: const Text('Add Person 👤'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    enabled: !isLoading,
+                    onChanged: (value) => newPerson = value,
+                    decoration: InputDecoration(
+                      labelText: 'Name',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.05),
+                    ),
+                  ),
+                  if (isLoading)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 16),
+                      child: CircularProgressIndicator(),
+                    ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed:
+                      isLoading ? null : () => Navigator.of(context).pop(),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: isLoading
+                      ? null
+                      : () async {
+                          if (newPerson.isNotEmpty) {
+                            setState(() => isLoading = true);
+                            await _peopleBox.add(Person(newPerson));
+                            Navigator.of(context).pop();
+                          }
+                        },
+                  child: const Text('Add'),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -923,8 +641,10 @@ class HistoryPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Expense History',
-            style: Theme.of(context).textTheme.headlineMedium,
+            '📅 Expense History',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
           ),
           const SizedBox(height: 20),
           Expanded(
@@ -935,27 +655,28 @@ class HistoryPage extends StatelessWidget {
                   itemCount: box.length,
                   itemBuilder: (context, index) {
                     final expense = box.getAt(box.length - 1 - index)!;
-                    return Dismissible(
-                      key: Key(expense.date.toString()),
-                      background: Container(
-                        color: Colors.red,
-                        alignment: Alignment.centerRight,
-                        padding: const EdgeInsets.only(right: 20),
-                        child: const Icon(Icons.delete, color: Colors.white),
+                    return Container(
+                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border:
+                            Border.all(color: Colors.white.withOpacity(0.1)),
                       ),
-                      direction: DismissDirection.endToStart,
-                      onDismissed: (_) => _deleteExpense(context, expense),
-                      child: Container(
-                        width: double.infinity,
-                        height: 80,
-                        alignment: Alignment.center,
-                        child: ListTile(
-                          title: Text(
-                              DateFormat('yyyy-MM-dd').format(expense.date)),
-                          subtitle: Text(
-                              'Total: Rs: ${expense.totalAmount.toStringAsFixed(2)}'),
-                          onTap: () => _showExpenseDetails(context, expense),
+                      child: ListTile(
+                        leading: const Icon(Icons.receipt_long,
+                            color: Colors.white70),
+                        title: Text(
+                            DateFormat('MMM dd, yyyy').format(expense.date)),
+                        subtitle: Text(
+                          '💰 Total: Rs ${expense.totalAmount.toStringAsFixed(2)}',
+                          style: const TextStyle(color: Colors.white70),
                         ),
+                        trailing: Text(
+                          '👥 ${expense.involvedPeople.length} people',
+                          style: const TextStyle(color: Colors.white54),
+                        ),
+                        onTap: () => _showExpenseDetails(context, expense),
                       ),
                     );
                   },
@@ -1021,8 +742,10 @@ class AnalyticsPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Analytics',
-            style: Theme.of(context).textTheme.headlineMedium,
+            '📊 Analytics Dashboard',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
           ),
           const SizedBox(height: 20),
           Expanded(
@@ -1031,14 +754,37 @@ class AnalyticsPage extends StatelessWidget {
               builder: (context, Box<Expense> box, _) {
                 List<Expense> expenses = box.values.toList();
                 expenses.sort((a, b) => b.date.compareTo(a.date));
-                return SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      _buildTotalSpendingWidget(expenses),
-                      const SizedBox(height: 20),
-                      _buildTopSpendersWidget(expenses),
-                    ],
-                  ),
+
+                if (expenses.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.bar_chart_sharp,
+                            size: 64, color: Colors.white.withOpacity(0.5)),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No expenses recorded yet',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.white.withOpacity(0.7),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return ListView(
+                  children: [
+                    _buildTotalSpendingWidget(expenses),
+                    const SizedBox(height: 20),
+                    _buildMonthlySpendingWidget(expenses),
+                    const SizedBox(height: 20),
+                    _buildTopSpendersWidget(expenses),
+                    const SizedBox(height: 20),
+                    _buildRecentTransactionsWidget(expenses),
+                  ],
                 );
               },
             ),
@@ -1052,16 +798,99 @@ class AnalyticsPage extends StatelessWidget {
     double totalSpending =
         expenses.fold(0, (sum, expense) => sum + expense.totalAmount);
     return Container(
-      width: double.infinity,
-      height: 100,
-      alignment: Alignment.center,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF16213E),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.withOpacity(0.1),
+            blurRadius: 10,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text('Total Spending', style: TextStyle(fontSize: 18)),
-          Text('Rs: ${totalSpending.toStringAsFixed(2)}',
-              style:
-                  const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.account_balance_wallet, color: Colors.greenAccent),
+              SizedBox(width: 8),
+              Text(
+                '💰 Total Spending',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '₹${totalSpending.toStringAsFixed(2)}',
+            style: const TextStyle(
+              fontSize: 36,
+              fontWeight: FontWeight.bold,
+              color: Colors.greenAccent,
+            ),
+          ),
+          Text(
+            '${expenses.length} total transactions',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.white.withOpacity(0.7),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMonthlySpendingWidget(List<Expense> expenses) {
+    Map<String, double> monthlySpending = {};
+
+    for (var expense in expenses) {
+      String monthYear = DateFormat('MMM yyyy').format(expense.date);
+      monthlySpending[monthYear] =
+          (monthlySpending[monthYear] ?? 0) + expense.totalAmount;
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF16213E),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.calendar_month, color: Colors.orangeAccent),
+              SizedBox(width: 8),
+              Text(
+                '📅 Monthly Overview',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ...monthlySpending.entries.take(3).map((entry) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(entry.key),
+                    Text(
+                      '₹${entry.value.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        color: Colors.orangeAccent,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              )),
         ],
       ),
     );
@@ -1081,27 +910,120 @@ class AnalyticsPage extends StatelessWidget {
           ..sort((a, b) => b.value.compareTo(a.value));
 
     return Container(
-      width: double.infinity,
-      height: 300,
-      alignment: Alignment.center,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF16213E),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white12),
+      ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Text('Top Spenders', style: TextStyle(fontSize: 18)),
+          const Row(
+            children: [
+              Icon(Icons.emoji_events, color: Colors.amber),
+              SizedBox(width: 8),
+              Text(
+                '🏆 Top Spenders',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ],
           ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: sortedSpenders.length.clamp(0, 5),
-              itemBuilder: (context, index) {
-                final spender = sortedSpenders[index];
-                return ListTile(
-                  title: Text(spender.key),
-                  trailing: Text('Rs: ${spender.value.toStringAsFixed(2)}'),
-                );
-              },
-            ),
+          const SizedBox(height: 16),
+          ...sortedSpenders.take(5).map((spender) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: Colors.amber.withOpacity(0.2),
+                      child: Text(
+                        spender.key[0].toUpperCase(),
+                        style: const TextStyle(color: Colors.amber),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(spender.key),
+                    ),
+                    Text(
+                      '₹${spender.value.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        color: Colors.greenAccent,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecentTransactionsWidget(List<Expense> expenses) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF16213E),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.access_time, color: Colors.blueAccent),
+              SizedBox(width: 8),
+              Text(
+                '🕒 Recent Transactions',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ],
           ),
+          const SizedBox(height: 16),
+          ...expenses.take(3).map((expense) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.blueAccent.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child:
+                          const Icon(Icons.receipt, color: Colors.blueAccent),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            DateFormat('MMM dd, yyyy').format(expense.date),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            '${expense.involvedPeople.length} people involved',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white.withOpacity(0.7),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      '₹${expense.totalAmount.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        color: Colors.blueAccent,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              )),
         ],
       ),
     );
